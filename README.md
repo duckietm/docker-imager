@@ -11,6 +11,7 @@ Example :
 ```env
 API_HOST=imager
 API_PORT=3030
+IMAGER_PATH='/imaging'
 AVATAR_SAVE_PATH=/src/saved_figure
 AVATAR_ACTIONS_URL=/var/www/Gamedata/config/HabboAvatarActions.json
 AVATAR_FIGUREDATA_URL=/var/www/Gamedata/config/FigureData.json
