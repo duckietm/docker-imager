@@ -13,6 +13,7 @@ export class AvatarImagePartContainer
     private _isColorable: boolean;
     private _isBlendable: boolean;
     private _paletteMapId: number;
+	private _colorHex: any;
 
     constructor(k: string, _arg_2: string, _arg_3: string, _arg_4: IPartColor, _arg_5: AvatarAnimationFrame[], _arg_6: IActionDefinition, _arg_7: boolean, _arg_8: number, _arg_9: string = '', _arg_10: boolean = false, _arg_11: number = 1)
     {
