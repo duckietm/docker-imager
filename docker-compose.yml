@@ -15,7 +15,7 @@ services:
     volumes:
       - ./imager:/src
       - /var/www:/var/www
-    command: sh -c "npm i && npm run build && npm run start"
+    command: sh -c "yarn install && yarn build && yarn starts"
     tty: true
 
 networks:
