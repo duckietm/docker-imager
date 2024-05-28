@@ -1,4 +1,4 @@
-## Nitro Imager with Node V19
+## Nitro Imager with Node V21
 
 Copy the content to example : /docker/nitro_imager
 
