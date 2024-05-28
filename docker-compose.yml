@@ -15,7 +15,7 @@ services:
     volumes:
       - ./imager:/src
       - /var/www:/var/www
-    command: sh -c "yarn install && yarn build && yarn starts"
+    command: sh -c "yarn install && yarn build && yarn start"
     tty: true
 
 networks:
