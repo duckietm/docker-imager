@@ -56,10 +56,10 @@ location /imaging/ {
 * if you have nginx setup and the docker is running, you can test it by using the follwing URL : https://##YOUR DOMAIN##/imaging/?figure=ha-1003-88.lg-285-89.ch-3032-1334-109.sh-3016-110.hd-180-1359.ca-3225-110-62.wa-3264-62-62.hr-891-1342.0;action=std&gesture=sml&direction=2&head_direction=2amp;img_format=png&gesture=srp&headonly=1&size=l
 * Once the docker has run for the first time change the docker-compose.yml
 ```
-command: sh -c "npm i && npm run build && npm run start"
+command: sh -c "yarn install && yarn build && yarn start"
 ```
 Change this to:
 ```
-command: sh -c "npm run start"
+command: sh -c "yarn start"
 ```
 This will speedup the startup of the imager, as the Install/Build only need to be done once !
