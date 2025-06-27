@@ -1,22 +1,24 @@
-version: "3.9"
-
 services:
-  nodejs:
-    container_name: imager
-    restart: unless-stopped
+  node:
     build:
-      context: ./
+      context: .
       dockerfile: Dockerfile
+    container_name: habbo_imager
+    working_dir: /src
+    ports:
+      - "3030:3030"
+    stdin_open: true
+    tty: true
     networks:
       frontend:
         ipv4_address: 172.38.0.2
-    ports:
-      - 3030:3030
+    environment:
+      - YARN_CACHE_FOLDER=/src/app/.yarn-cache
     volumes:
       - ./imager:/src
       - /var/www:/var/www
-    command: sh -c "npm i && npm run build && npm run start"
-    tty: true
+    command: sh -c "node ./dist/index.js"
+    restart: always
 
 networks:
   frontend:
@@ -25,3 +27,4 @@ networks:
       config:
         - subnet: 172.38.0.0/24
           gateway: 172.38.0.1
+

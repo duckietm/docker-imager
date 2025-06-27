@@ -3,27 +3,23 @@ import { Request, Response } from 'express';
 import { createWriteStream, writeFile, WriteStream } from 'fs';
 import GIFEncoder from 'gifencoder';
 import { AvatarRenderManager, AvatarScaleType, IAvatarImage } from '../avatar';
-import { File, FileUtilities, NitroLogger, Point } from '../core';
+import { CanvasUtilities, File, FileUtilities, NitroLogger, Point } from '../core';
 import { BuildFigureOptionsRequest, BuildFigureOptionsStringRequest, ProcessActionRequest, ProcessDanceRequest, ProcessDirectionRequest, ProcessEffectRequest, ProcessGestureRequest, RequestQuery } from './utils';
 
-export const HttpRouter = async (request: Request<any, any, any, RequestQuery>, response: Response) =>
-{
+export const HttpRouter = async (request: Request<any, any, any, RequestQuery>, response: Response) => {
     const query = request.query;
 
-    try
-    {
+    try {
         const buildOptions = BuildFigureOptionsRequest(query);
         const saveDirectory = (process.env.AVATAR_SAVE_PATH as string);
         const directory = FileUtilities.getDirectory(saveDirectory);
         const avatarString = BuildFigureOptionsStringRequest(buildOptions);
-        const saveFile = new File(`${ directory.path }/${ avatarString }.${ buildOptions.imageFormat }`);
+        const saveFile = new File(`${directory.path}/${avatarString}.${buildOptions.imageFormat}`);
 
-        if(saveFile.exists())
-        {
+        if (saveFile.exists()) {
             const buffer = await FileUtilities.readFileAsBuffer(saveFile.path);
 
-            if(buffer)
-            {
+            if (buffer) {
                 response
                     .writeHead(200, {
                         'Content-Type': ((buildOptions.imageFormat === 'gif') ? 'image/gif' : 'image/png')
@@ -34,10 +30,8 @@ export const HttpRouter = async (request: Request<any, any, any, RequestQuery>, 
             return;
         }
 
-        if(buildOptions.effect > 0)
-        {
-            if(!AvatarRenderManager.instance.effectManager.isAvatarEffectReady(buildOptions.effect))
-            {
+        if (buildOptions.effect > 0) {
+            if (!AvatarRenderManager.instance.effectManager.isAvatarEffectReady(buildOptions.effect)) {
                 await AvatarRenderManager.instance.effectManager.downloadAvatarEffect(buildOptions.effect);
             }
         }
@@ -54,101 +48,70 @@ export const HttpRouter = async (request: Request<any, any, any, RequestQuery>, 
         ProcessDanceRequest(query, avatar);
         ProcessEffectRequest(query, avatar);
 
-        avatar.endActionAppends();
+        await avatar.endActionAppends();
 
         const tempCanvas = createCanvas((avatarCanvas.width * buildOptions.size), (avatarCanvas.height * buildOptions.size));
+        CanvasUtilities.prepareTransparentCanvas(tempCanvas); // Ensure transparent canvas
         const tempCtx = tempCanvas.getContext('2d');
 
         let encoder: GIFEncoder = null;
         let stream: WriteStream = null;
 
-        if(buildOptions.imageFormat === 'gif')
-        {
+        if (buildOptions.imageFormat === 'gif') {
             encoder = new GIFEncoder(tempCanvas.width, tempCanvas.height);
             stream = encoder.createReadStream().pipe(createWriteStream(saveFile.path));
 
             encoder.start();
             encoder.setRepeat(0);
-            encoder.setDelay(1);
-            encoder.setQuality(10);
+            encoder.setDelay(200); // 5 FPS
+            encoder.setQuality(5); // High quality
+            encoder.setTransparent(0xFFFF00FF); // Magenta for transparency
         }
 
         let totalFrames = 0;
 
-        if(buildOptions.imageFormat !== 'gif')
-        {
-            if(buildOptions.frameNumber > 0) avatar.updateAnimationByFrames(buildOptions.frameNumber);
-
+        if (buildOptions.imageFormat !== 'gif') {
+            if (buildOptions.frameNumber > 0) avatar.updateAnimationByFrames(buildOptions.frameNumber);
             totalFrames = 1;
-        }
-        else
-        {
-            totalFrames = ((avatar.getTotalFrameCount() * 2) || 1);
+        } else {
+            totalFrames = avatar.getTotalFrameCount();
         }
 
-        for(let i = 0; i < totalFrames; i++)
-        {
+        for (let i = 0; i < totalFrames; i++) {
             tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+            CanvasUtilities.prepareTransparentCanvas(tempCanvas); // Reapply transparency per frame
 
-            if(totalFrames && (i > 0)) avatar.updateAnimationByFrames(1);
+            if (totalFrames && (i > 0)) avatar.updateAnimationByFrames(1);
 
             const canvas = await avatar.getImage(buildOptions.setType, 0, false, buildOptions.size);
 
             const avatarOffset = new Point();
 
             let canvasOffsets = avatar.getCanvasOffsets();
-
-            if(!canvasOffsets || !canvasOffsets.length) canvasOffsets = [ 0, 0, 0 ];
-
-            const postureOffset = 0;
-
-            avatarOffset.x = ((((-1 * 64) / 2) + canvasOffsets[0]) - ((canvas.width - 64) / 2));
-            avatarOffset.y = (((-(canvas.height) + (64 / 4)) + canvasOffsets[1]) + postureOffset);
-
-            const otherOffset = new Point(0, -16);
-
-            for(const sprite of avatar.getSprites())
-            {
-                if(sprite.id === 'avatar')
-                {
-                    const layerData = avatar.getLayerData(sprite);
-
-                    let offsetX = sprite.getDirectionOffsetX(buildOptions.direction);
-                    let offsetY = sprite.getDirectionOffsetY(buildOptions.direction);
-
-                    if(layerData)
-                    {
-                        offsetX += layerData.dx;
-                        offsetY += layerData.dy;
-                    }
-
-                    const canStandUp = false;
-
-                    if(!canStandUp)
-                    {
-                        avatarOffset.x += offsetX;
-                        avatarOffset.y += offsetY;
-                    }
-                }
+            if (!canvasOffsets || !canvasOffsets.length) {
+                canvasOffsets = [0, 0, 0];
             }
 
-            const avatarSize = 64;
-            const sizeOffset = new Point(((canvas.width - avatarSize) / 2), (canvas.height - (avatarSize / 4)));
+            avatarOffset.x = canvasOffsets[0];
+            avatarOffset.y = canvasOffsets[1];
+
+            const otherOffset = new Point(0, -16);
 
             ProcessAvatarSprites(tempCanvas, avatar, otherOffset, false);
 
             tempCtx.save();
-            tempCtx.drawImage(canvas, ((canvas.width / 2) + avatarOffset.x), (canvas.height + avatarOffset.y) + otherOffset.y, canvas.width, canvas.height);
+            const bodyParts = avatar.getBodyParts(buildOptions.setType, avatar.mainAction.definition.geometryType, buildOptions.direction);
+            tempCtx.drawImage(canvas, avatarOffset.x, avatarOffset.y + otherOffset.y, canvas.width, canvas.height);
             tempCtx.restore();
 
             ProcessAvatarSprites(tempCanvas, avatar, otherOffset, true);
 
-            if(encoder)
-            {
-                encoder.addFrame(tempCtx);
-            }
-            else
-            {
+            if (encoder) {
+                // Debug pixel data
+                const pixelData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
+                encoder.addFrame(tempCtx as any);
+                const fs = require('fs');
+            } else {
                 const buffer = tempCanvas.toBuffer();
 
                 response
@@ -157,20 +120,19 @@ export const HttpRouter = async (request: Request<any, any, any, RequestQuery>, 
                     })
                     .end(buffer);
 
-                writeFile(saveFile.path, buffer, () =>
-                {});
+                writeFile(saveFile.path, buffer, (err) => {
+                    if (err) NitroLogger.error(err.message);
+                });
 
                 return;
             }
         }
 
-        if(encoder) encoder.finish();
+        if (encoder) encoder.finish();
 
-        if(stream)
-        {
-            await new Promise((resolve, reject) =>
-            {
-                stream.on('finish', resolve);
+        if (stream) {
+            await new Promise<void>((resolve, reject) => {
+                stream.on('finish', () => resolve());
                 stream.on('error', reject);
             });
         }
@@ -182,10 +144,7 @@ export const HttpRouter = async (request: Request<any, any, any, RequestQuery>, 
                 'Content-Type': 'image/gif'
             })
             .end(buffer);
-    }
-
-    catch (err)
-    {
+    } catch (err) {
         NitroLogger.error(err.message);
 
         response
@@ -194,12 +153,10 @@ export const HttpRouter = async (request: Request<any, any, any, RequestQuery>, 
     }
 };
 
-function ProcessAvatarSprites(canvas: Canvas, avatar: IAvatarImage, offset: Point, frontSprites: boolean = true)
-{
+function ProcessAvatarSprites(canvas: Canvas, avatar: IAvatarImage, offset: Point, frontSprites: boolean = true) {
     const ctx = canvas.getContext('2d');
 
-    for(const sprite of avatar.getSprites())
-    {
+    for (const sprite of avatar.getSprites()) {
         const layerData = avatar.getLayerData(sprite);
 
         let offsetX = sprite.getDirectionOffsetX(avatar.getDirection());
@@ -208,29 +165,26 @@ function ProcessAvatarSprites(canvas: Canvas, avatar: IAvatarImage, offset: Poin
         let direction = 0;
         let frame = 0;
 
-        if(!frontSprites)
-        {
-            if(offsetZ >= 0) continue;
-        }
-        else if(offsetZ < 0) continue;
+        if (!frontSprites) {
+            if (offsetZ >= 0) continue;
+        } else if (offsetZ < 0) continue;
 
-        if(sprite.hasDirections) direction = avatar.getDirection();
+        if (sprite.hasDirections) direction = avatar.getDirection();
 
-        if(layerData)
-        {
+        if (layerData) {
             frame = layerData.animationFrame;
             offsetX += layerData.dx;
             offsetY += layerData.dy;
             direction += layerData.dd;
         }
 
-        if(direction < 0) direction = (direction + 8);
-        else if(direction > 7) direction = (direction - 8);
+        if (direction < 0) direction = (direction + 8);
+        else if (direction > 7) direction = (direction - 8);
 
         const assetName = ((((((avatar.getScale() + '_') + sprite.member) + '_') + direction) + '_') + frame);
         const asset = avatar.getAsset(assetName);
 
-        if(!asset) continue;
+        if (!asset) continue;
 
         const texture = asset.texture;
 
@@ -239,7 +193,7 @@ function ProcessAvatarSprites(canvas: Canvas, avatar: IAvatarImage, offset: Poin
 
         ctx.save();
 
-        if(sprite.ink === 33) ctx.globalCompositeOperation = 'lighter';
+        if (sprite.ink === 33) ctx.globalCompositeOperation = 'lighter';
 
         ctx.drawImage(texture.drawableCanvas, x, y, texture.width, texture.height);
 

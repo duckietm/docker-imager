@@ -1,4 +1,5 @@
 import { wrap } from 'bytebuffer';
+
 export class BinaryReader
 {
     private _position: number;
@@ -35,13 +36,31 @@ export class BinaryReader
         return this._dataView.remaining();
     }
 
+    public readString(length: number): string
+    {
+        const bytes = this.readBytes(length).toArrayBuffer();
+        return new TextDecoder().decode(bytes);
+    }
+
+    // Ensure this returns only ArrayBuffer, handling both ArrayBuffer and SharedArrayBuffer properly
+    public toArrayBuffer(): ArrayBuffer
+    {
+        // Check and return the correct ArrayBuffer
+        const buffer = this._dataView.buffer;
+        
+        // Explicitly assert the type of buffer as ArrayBuffer or SharedArrayBuffer
+        if (buffer instanceof ArrayBuffer) {
+            return buffer;
+        } else if (buffer instanceof SharedArrayBuffer) {
+            // Return a new ArrayBuffer using byteLength
+            return new ArrayBuffer((buffer as SharedArrayBuffer).byteLength); // Type assertion here
+        }
+        
+        throw new Error('Unexpected buffer type');
+    }
+
     public toString(encoding?: string): string
     {
         return new TextDecoder().decode(this._dataView.buffer);
-    }
-
-    public toArrayBuffer(): ArrayBuffer
-    {
-        return this._dataView.buffer;
     }
 }

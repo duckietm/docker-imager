@@ -120,4 +120,19 @@ export class CanvasUtilities
 
         return canvas;
     }
+
+    // New method to ensure canvas is transparent for GIF encoding
+    public static prepareTransparentCanvas(canvas: Canvas): Canvas
+    {
+        const ctx = canvas.getContext('2d');
+        
+        // Clear canvas to fully transparent
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Ensure no global fill styles interfere
+        ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+        ctx.globalCompositeOperation = 'source-over';
+        
+        return canvas;
+    }
 }
