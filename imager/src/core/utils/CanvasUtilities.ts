@@ -1,10 +1,8 @@
 import { Canvas, createCanvas } from 'canvas';
 import { Texture } from './Texture';
 
-export class CanvasUtilities
-{
-    public static cropTransparentPixels(canvas: Canvas): Canvas
-    {
+export class CanvasUtilities {
+    public static cropTransparentPixels(canvas: Canvas): Canvas {
         const bounds = {
             top: null,
             left: null,
@@ -16,23 +14,21 @@ export class CanvasUtilities
         const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const length = pixels.data.length;
 
-        for(let i = 0; i < length; i += 4)
-        {
-            if(pixels.data[i+3] !== 0)
-            {
+        for (let i = 0; i < length; i += 4) {
+            if (pixels.data[i + 3] !== 0) {
                 const x = (i / 4) % canvas.width;
                 const y = ~~((i / 4) / canvas.width);
 
-                if(bounds.top === null) bounds.top = y;
+                if (bounds.top === null) bounds.top = y;
 
-                if(bounds.left === null) bounds.left = x;
-                else if(x < bounds.left) bounds.left = x;
+                if (bounds.left === null) bounds.left = x;
+                else if (x < bounds.left) bounds.left = x;
 
-                if(bounds.right === null) bounds.right = x;
-                else if(bounds.right < x) bounds.right = x;
+                if (bounds.right === null) bounds.right = x;
+                else if (bounds.right < x) bounds.right = x;
 
-                if(bounds.bottom === null) bounds.bottom = y;
-                else if(bounds.bottom < y) bounds.bottom = y;
+                if (bounds.bottom === null) bounds.bottom = y;
+                else if (bounds.bottom < y) bounds.bottom = y;
             }
         }
 
@@ -47,8 +43,7 @@ export class CanvasUtilities
         return canvas;
     }
 
-    public static tintWithMultiply(texture: Texture, color: number): Canvas
-    {
+    public static tintWithMultiply(texture: Texture, color: number): Canvas {
         const crop = texture.frame.clone();
         const resolution = texture.baseTexture.resolution;
 
@@ -100,8 +95,7 @@ export class CanvasUtilities
         return canvas;
     }
 
-    public static scaleCanvas(canvas: Canvas, scaleX: number, scaleY: number): Canvas
-    {
+    public static scaleCanvas(canvas: Canvas, scaleX: number, scaleY: number): Canvas {
         const tempCanvas = this.createNitroCanvas((canvas.width * scaleX), (canvas.height * scaleY));
         const ctx = tempCanvas.getContext('2d');
 
@@ -111,8 +105,7 @@ export class CanvasUtilities
         return tempCanvas;
     }
 
-    public static createNitroCanvas(width: number, height: number): Canvas
-    {
+    public static createNitroCanvas(width: number, height: number): Canvas {
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
@@ -121,16 +114,13 @@ export class CanvasUtilities
         return canvas;
     }
 
-    // New method to ensure canvas is transparent for GIF encoding
-    public static prepareTransparentCanvas(canvas: Canvas): Canvas
-    {
+    public static prepareTransparentCanvas(canvas: Canvas): Canvas {
         const ctx = canvas.getContext('2d');
         
-        // Clear canvas to fully transparent
+        // Clear canvas and set magenta background for GIF transparency
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Ensure no global fill styles interfere
-        ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+        ctx.fillStyle = '#FF00FF'; // Magenta for GIFEncoder
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.globalCompositeOperation = 'source-over';
         
         return canvas;
