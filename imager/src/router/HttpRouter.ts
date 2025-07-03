@@ -77,71 +77,56 @@ export const HttpRouter = async (request: Request<any, any, any, RequestQuery>, 
             totalFrames = avatar.getTotalFrameCount();
         }
 
-	for (let i = 0; i < totalFrames; i++) {
-    // Clear canvas and ensure magenta background
-    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-    CanvasUtilities.prepareTransparentCanvas(tempCanvas); // Sets magenta #FF00FF
+        for (let i = 0; i < totalFrames; i++) {
+            tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+            CanvasUtilities.prepareTransparentCanvas(tempCanvas); // Reapply transparency per frame
 
-    if (totalFrames && i > 0) avatar.updateAnimationByFrames(1);
+            if (totalFrames && (i > 0)) avatar.updateAnimationByFrames(1);
 
-    const canvas = await avatar.getImage(buildOptions.setType, 0, false, buildOptions.size);
+            const canvas = await avatar.getImage(buildOptions.setType, 0, false, buildOptions.size);
 
-    const avatarOffset = new Point();
+            const avatarOffset = new Point();
 
-    let canvasOffsets = avatar.getCanvasOffsets();
-    if (!canvasOffsets || !canvasOffsets.length) {
-        console.warn(`Frame ${i} using default offsets`);
-        canvasOffsets = [0, 0, 0];
-    }
-    console.log(`Frame ${i} offsets: ${canvasOffsets}`);
+            let canvasOffsets = avatar.getCanvasOffsets();
+            if (!canvasOffsets || !canvasOffsets.length) {
+                canvasOffsets = [0, 0, 0];
+            }
 
-    avatarOffset.x = canvasOffsets[0];
-    avatarOffset.y = canvasOffsets[1];
+            avatarOffset.x = canvasOffsets[0];
+            avatarOffset.y = canvasOffsets[1];
 
-    const otherOffset = new Point(0, -16);
+            const otherOffset = new Point(0, -16);
 
-    ProcessAvatarSprites(tempCanvas, avatar, otherOffset, false);
+            ProcessAvatarSprites(tempCanvas, avatar, otherOffset, false);
 
-    tempCtx.save();
-    console.log(`Frame ${i} canvas size: ${canvas.width}x${canvas.height}`);
-    console.log(`Frame ${i} sprite count: ${avatar.getSprites().length}`);
-    const bodyParts = avatar.getBodyParts(buildOptions.setType, avatar.mainAction.definition.geometryType, buildOptions.direction);
-    console.log(`Frame ${i} body parts from getImage: ${bodyParts}`);
+            tempCtx.save();
+            const bodyParts = avatar.getBodyParts(buildOptions.setType, avatar.mainAction.definition.geometryType, buildOptions.direction);
+            tempCtx.drawImage(canvas, avatarOffset.x, avatarOffset.y + otherOffset.y, canvas.width, canvas.height);
+            tempCtx.restore();
 
-    // Debug: Log background pixel data before drawing
-    const preDrawPixelData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
-    console.log(`Frame ${i} pre-draw pixel data sample (top-left): ${preDrawPixelData.slice(0, 16)}`);
+            ProcessAvatarSprites(tempCanvas, avatar, otherOffset, true);
 
-    tempCtx.drawImage(canvas, avatarOffset.x, avatarOffset.y + otherOffset.y, canvas.width, canvas.height);
-    tempCtx.restore();
+            if (encoder) {
+                // Debug pixel data
+                const pixelData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
+                encoder.addFrame(tempCtx as any);
+                const fs = require('fs');
+            } else {
+                const buffer = tempCanvas.toBuffer();
 
-    ProcessAvatarSprites(tempCanvas, avatar, otherOffset, true);
+                response
+                    .writeHead(200, {
+                        'Content-Type': 'image/png'
+                    })
+                    .end(buffer);
 
-    // Debug: Log pixel data after drawing
-    const postDrawPixelData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
-    console.log(`Frame ${i} post-draw pixel data sample (top-left): ${postDrawPixelData.slice(0, 16)}`);
+                writeFile(saveFile.path, buffer, (err) => {
+                    if (err) NitroLogger.error(err.message);
+                });
 
-    if (encoder) {
-        encoder.addFrame(tempCtx as any);
-        const fs = require('fs');
-        // fs.writeFileSync(`debug_frame_${i}.png`, tempCanvas.toBuffer()); <== To debug the output per frame
-        // console.log(`Saved debug_frame_${i}.png`);
-    } else {
-        const buffer = tempCanvas.toBuffer();
-
-        response
-            .writeHead(200, {
-                'Content-Type': 'image/png'
-            })
-            .end(buffer);
-
-        writeFile(saveFile.path, buffer, (err) => {
-            if (err) NitroLogger.error(err.message);
-        });
-
-        return;
-		}
-	}
+                return;
+            }
+        }
 
         if (encoder) encoder.finish();
 
