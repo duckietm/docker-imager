@@ -12,7 +12,8 @@ import { IAvatarFigureContainer } from './IAvatarFigureContainer';
 import { IAvatarImage } from './IAvatarImage';
 import { IPartColor } from './structure';
 
-export class AvatarImage implements IAvatarImage {
+export class AvatarImage implements IAvatarImage
+{
     private static CHANNELS_EQUAL: string = 'CHANNELS_EQUAL';
     private static CHANNELS_UNIQUE: string = 'CHANNELS_UNIQUE';
     private static CHANNELS_RED: string = 'CHANNELS_RED';
@@ -54,7 +55,8 @@ export class AvatarImage implements IAvatarImage {
     private _cachedBodyPartsAvatarSet: string = null;
     private _effectManager: EffectAssetDownloadManager;
 
-    constructor(k: AvatarStructure, _arg_2: AssetAliasCollection, _arg_3: AvatarFigureContainer, _arg_4: string, _arg_5: EffectAssetDownloadManager) {
+    constructor(k: AvatarStructure, _arg_2: AssetAliasCollection, _arg_3: AvatarFigureContainer, _arg_4: string, _arg_5: EffectAssetDownloadManager)
+    {
         this._canvasOffsets = [];
         this._actions = [];
         this._cachedBodyParts = [];
@@ -63,10 +65,12 @@ export class AvatarImage implements IAvatarImage {
         this._structure = k;
         this._assets = _arg_2;
         this._scale = _arg_4;
-        if (this._scale == null) {
+        if(this._scale == null)
+        {
             this._scale = AvatarScaleType.LARGE;
         }
-        if (_arg_3 == null) {
+        if(_arg_3 == null)
+        {
             _arg_3 = new AvatarFigureContainer('hr-893-45.hd-180-2.ch-210-66.lg-270-82.sh-300-91.wa-2007-.ri-1-');
         }
         this._figure = _arg_3;
@@ -79,8 +83,9 @@ export class AvatarImage implements IAvatarImage {
         this._animationFrameCount = 0;
     }
 
-    public async dispose(): Promise<void> {
-        if (this._disposed) return;
+    public async dispose(): Promise<void>
+    {
+        if(this._disposed) return;
 
         this._structure = null;
         this._assets = null;
@@ -89,7 +94,8 @@ export class AvatarImage implements IAvatarImage {
         this._avatarSpriteData = null;
         this._actions = null;
 
-        if (this._cache) {
+        if(this._cache)
+        {
             this._cache.dispose();
             this._cache = null;
         }
@@ -98,39 +104,49 @@ export class AvatarImage implements IAvatarImage {
         this._disposed = true;
     }
 
-    public get disposed(): boolean {
+    public get disposed(): boolean
+    {
         return this._disposed;
     }
 
-    public getFigure(): IAvatarFigureContainer {
+    public getFigure(): IAvatarFigureContainer
+    {
         return this._figure;
     }
 
-    public getScale(): string {
+    public getScale(): string
+    {
         return this._scale;
     }
 
-    public getPartColor(k: string): IPartColor {
+    public getPartColor(k: string): IPartColor
+    {
         return this._structure.getPartColor(this._figure, k);
     }
 
-    public setDirection(k: string, _arg_2: number): void {
+    public setDirection(k: string, _arg_2: number): void
+    {
         _arg_2 = (_arg_2 + this._directionOffset);
 
-        if (_arg_2 < AvatarDirectionAngle.MIN_DIRECTION) {
+        if(_arg_2 < AvatarDirectionAngle.MIN_DIRECTION)
+        {
             _arg_2 = (AvatarDirectionAngle.MAX_DIRECTION + (_arg_2 + 1));
         }
 
-        if (_arg_2 > AvatarDirectionAngle.MAX_DIRECTION) {
+        if(_arg_2 > AvatarDirectionAngle.MAX_DIRECTION)
+        {
             _arg_2 = (_arg_2 - (AvatarDirectionAngle.MAX_DIRECTION + 1));
         }
 
-        if (this._structure.isMainAvatarSet(k)) {
+        if(this._structure.isMainAvatarSet(k))
+        {
             this._mainDirection = _arg_2;
         }
 
-        if ((k === AvatarSetType.HEAD) || (k === AvatarSetType.FULL)) {
-            if ((k === AvatarSetType.HEAD) && (this.isHeadTurnPreventedByAction())) {
+        if((k === AvatarSetType.HEAD) || (k === AvatarSetType.FULL))
+        {
+            if((k === AvatarSetType.HEAD) && (this.isHeadTurnPreventedByAction()))
+            {
                 _arg_2 = this._mainDirection;
             }
 
@@ -140,69 +156,84 @@ export class AvatarImage implements IAvatarImage {
         this._cache.setDirection(k, _arg_2);
     }
 
-    public setDirectionAngle(k: string, _arg_2: number): void {
+    public setDirectionAngle(k: string, _arg_2: number): void
+    {
         this.setDirection(k, Math.floor(_arg_2 / 45));
     }
 
-    public getSprites(): ISpriteDataContainer[] {
+    public getSprites(): ISpriteDataContainer[]
+    {
         return this._sprites;
     }
 
-    public getCanvasOffsets(): number[] {
-        return (this._canvasOffsets || [0, 0, 0]);
+    public getCanvasOffsets(): number[]
+    {
+        return (this._canvasOffsets || [ 0, 0, 0 ]);
     }
 
-    public getLayerData(k: ISpriteDataContainer): IAnimationLayerData {
+    public getLayerData(k: ISpriteDataContainer): IAnimationLayerData
+    {
         return this._structure.getBodyPartData(k.animation.id, this._frameCounter, k.id);
     }
 
-    public updateAnimationByFrames(k: number = 1): void {
+    public updateAnimationByFrames(k: number = 1): void
+    {
         this._frameCounter += k;
     }
 
-    public resetAnimationFrameCounter(): void {
+    public resetAnimationFrameCounter(): void
+    {
         this._frameCounter = 0;
     }
 
-    public getTotalFrameCount(): number {
+    public getTotalFrameCount(): number
+    {
         const actions = this._sortedActions;
 
         let frames = this._animationFrameCount;
 
-        for (const action of actions) {
+        for(const action of actions)
+        {
             const animation = this._structure.animationManager.getAnimation(((action.definition.state + '.') + action.actionParameter));
 
-            if (!animation) continue;
+            if(!animation) continue;
 
             const frameCount = animation.frameCount(action.overridingAction);
-            console.log(`Animation ${action.definition.state}.${action.actionParameter} has ${frameCount} frames`); // Debug frame count
+
             frames = Math.max(frames, frameCount);
         }
 
         return frames;
     }
 
-    private getFullImageCacheKey(): string {
-        if (((this._sortedActions.length == 1) && (this._mainDirection == this._headDirection))) {
+    private getFullImageCacheKey(): string
+    {
+        if(((this._sortedActions.length == 1) && (this._mainDirection == this._headDirection)))
+        {
             return (this._mainDirection + this._currentActionsString) + (this._frameCounter % 4);
         }
 
-        if (this._sortedActions.length == 2) {
-            for (const k of this._sortedActions) {
-                if (((k.actionType == 'fx') && ((((k.actionParameter == '33') || (k.actionParameter == '34')) || (k.actionParameter == '35')) || (k.actionParameter == '36')))) {
+        if(this._sortedActions.length == 2)
+        {
+            for(const k of this._sortedActions)
+            {
+                if(((k.actionType == 'fx') && ((((k.actionParameter == '33') || (k.actionParameter == '34')) || (k.actionParameter == '35')) || (k.actionParameter == '36'))))
+                {
                     return (this._mainDirection + this._currentActionsString) + 0;
                 }
 
-                if (((k.actionType == 'fx') && ((k.actionParameter == '38') || (k.actionParameter == '39')))) {
+                if(((k.actionType == 'fx') && ((k.actionParameter == '38') || (k.actionParameter == '39'))))
+                {
                     return (((this._mainDirection + '_') + this._headDirection) + this._currentActionsString) + (this._frameCounter % 11);
                 }
 
-                if ((k.actionType === 'dance') && ((k.actionParameter === '1') || (k.actionParameter === '2') || (k.actionParameter === '3') || (k.actionParameter === '4'))) {
+                if((k.actionType === 'dance') && ((k.actionParameter === '1') || (k.actionParameter === '2') || (k.actionParameter === '3') || (k.actionParameter === '4')))
+                {
                     let frame = (this._frameCounter % 8);
 
-                    if ((k.actionParameter === '3')) frame = (this._frameCounter % 10);
+                    if((k.actionParameter === '3')) frame = (this._frameCounter % 10);
 
-                    if ((k.actionParameter === '4')) frame = (this._frameCounter % 16);
+                    if((k.actionParameter === '4')) frame = (this._frameCounter % 16);
 
                     return (((this._mainDirection + k.actionType) + k.actionParameter) + frame);
                 }
@@ -212,8 +243,10 @@ export class AvatarImage implements IAvatarImage {
         return null;
     }
 
-    public getBodyParts(k: string, _arg_2: string, _arg_3: number): string[] {
-        if (((_arg_3 !== this._cachedBodyPartsDirection) || (_arg_2 !== this._cachedBodyPartsGeometryType)) || (k !== this._cachedBodyPartsAvatarSet)) {
+    private getBodyParts(k: string, _arg_2: string, _arg_3: number): string[]
+    {
+        if((((!(_arg_3 == this._cachedBodyPartsDirection)) || (!(_arg_2 == this._cachedBodyPartsGeometryType))) || (!(k == this._cachedBodyPartsAvatarSet))))
+        {
             this._cachedBodyPartsDirection = _arg_3;
             this._cachedBodyPartsGeometryType = _arg_2;
             this._cachedBodyPartsAvatarSet = k;
@@ -222,61 +255,67 @@ export class AvatarImage implements IAvatarImage {
         return this._cachedBodyParts;
     }
 
-    public getAvatarPartsForCamera(k: string): void {
+    public getAvatarPartsForCamera(k: string): void
+    {
         let _local_4: string;
-        if (this._mainAction == null) {
+        if(this._mainAction == null)
+        {
             return;
         }
         const _local_2 = this._structure.getCanvas(this._scale, this._mainAction.definition.geometryType);
-        if (_local_2 == null) {
+        if(_local_2 == null)
+        {
             return;
         }
         const _local_3 = this.getBodyParts(k, this._mainAction.definition.geometryType, this._mainDirection);
         let _local_6 = (_local_3.length - 1);
-        while (_local_6 >= 0) {
+        while(_local_6 >= 0)
+        {
             _local_4 = _local_3[_local_6];
             const _local_5 = this._cache.getImageContainer(_local_4, this._frameCounter);
             _local_6--;
         }
     }
 
-    public async getImage(setType: string, bgColor: number = 0, hightlight: boolean = false, scale: number = 1): Promise<Canvas> {
-        if (!this._mainAction) return null;
+    public async getImage(setType: string, bgColor: number = 0, hightlight: boolean = false, scale: number = 1): Promise<Canvas>
+    {
+        if(!this._mainAction) return null;
 
-        if (!this._actionsSorted) await this.endActionAppends();
+        if(!this._actionsSorted) await this.endActionAppends();
 
         const avatarCanvas = this._structure.getCanvas(this._scale, this._mainAction.definition.geometryType);
 
-        if (!avatarCanvas) return null;
+        if(!avatarCanvas) return null;
 
         const bodyParts = this.getBodyParts(setType, this._mainAction.definition.geometryType, this._mainDirection);
 
         const canvas = CanvasUtilities.createNitroCanvas(avatarCanvas.width, avatarCanvas.height);
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Ensure transparent canvas
 
-        if (bgColor > 0) {
-            ctx.fillStyle = `#${(`00000${(bgColor | 0).toString(16)}`).substr(-6)}`;
+        if(bgColor > 0)
+        {
+            ctx.fillStyle = ctx.fillStyle = `#${(`00000${(bgColor | 0).toString(16)}`).substr(-6)}`;
             ctx.fillRect(0, 0, avatarCanvas.width, avatarCanvas.height);
             ctx.fillStyle = null;
-        } else {
-            CanvasUtilities.prepareTransparentCanvas(canvas); // Apply transparent background
         }
 
         let partCount = (bodyParts.length - 1);
 
-        while (partCount >= 0) {
+        while(partCount >= 0)
+        {
             const set = bodyParts[partCount];
             const part = this._cache.getImageContainer(set, this._frameCounter);
 
-            if (part) {
+            if(part)
+            {
                 const partCacheContainer = part.image;
 
-                if (!partCacheContainer) return null;
+                if(!partCacheContainer) return null;
 
                 const point = part.regPoint.clone();
 
-                if (point) {
+                if(point)
+                {
                     point.x += avatarCanvas.offset.x;
                     point.y += avatarCanvas.offset.y;
 
@@ -292,31 +331,70 @@ export class AvatarImage implements IAvatarImage {
             partCount--;
         }
 
-        if (scale !== 1) return CanvasUtilities.scaleCanvas(canvas, scale, scale);
+        if(scale !== 1) return CanvasUtilities.scaleCanvas(canvas, scale, scale);
+
+        // canvas.width *= scale;
+        // canvas.height *= scale;
+
+        //CanvasUtilities.cropTransparentPixels(canvas);
+
+        //if(this._avatarSpriteData && this._avatarSpriteData.paletteIsGrayscale) this.convertToGrayscale(container);
 
         return canvas;
     }
 
-    public getAsset(k: string): IGraphicAsset {
+    // public applyPalette(texture: RenderTexture, reds: number[] = [], greens: number[] = [], blues: number[] = []): RenderTexture
+    // {
+    //     const textureCanvas     = Nitro.instance.renderer.extract.canvas(texture);
+    //     const textureCtx        = textureCanvas.getContext('2d');
+    //     const textureImageData  = textureCtx.getImageData(0, 0, textureCanvas.width, textureCanvas.height);
+    //     const data              = textureImageData.data;
+
+    //     for(const i = 0; i < data.length; i += 4)
+    //     {
+    //         let paletteColor = this._palette[data[ i + 1 ]];
+
+    //         if(paletteColor === undefined) paletteColor = [ 0, 0, 0 ];
+
+    //         data[ i ]       = paletteColor[0];
+    //         data[ i + 1 ]   = paletteColor[1];
+    //         data[ i + 2 ]   = paletteColor[2];
+    //     }
+
+    //     textureCtx.putImageData(textureImageData, 0, 0);
+
+    //     return Texture.from(textureCanvas);
+    // }
+
+    public getAsset(k: string): IGraphicAsset
+    {
         return this._assets.getAsset(k);
     }
 
-    public getDirection(): number {
+    public getDirection(): number
+    {
         return this._mainDirection;
     }
 
-    public initActionAppends(): void {
+    public initActionAppends(): void
+    {
         this._actions = [];
         this._actionsSorted = false;
         this._currentActionsString = '';
     }
 
-    public async endActionAppends(): Promise<void> {
-        if (!this.sortActions()) return;
+    public async endActionAppends(): Promise<void>
+    {
+        let k:ActiveActionData;
 
-        for (const k of this._sortedActions) {
-            if (k.actionType === AvatarAction.EFFECT) {
-                if (!this._effectManager.isAvatarEffectReady(parseInt(k.actionParameter))) {
+        if(!this.sortActions()) return;
+
+        for(const k of this._sortedActions)
+        {
+            if(k.actionType === AvatarAction.EFFECT)
+            {
+                if(!this._effectManager.isAvatarEffectReady(parseInt(k.actionParameter)))
+                {
                     await this._effectManager.downloadAvatarEffect(parseInt(k.actionParameter));
                 }
             }
@@ -324,22 +402,23 @@ export class AvatarImage implements IAvatarImage {
 
         this.resetActions();
         this.setActionsToParts();
-        console.log(`After endActionAppends, sprite count: ${this._sprites.length}`);
     }
 
-    public appendAction(k: string, ..._args: any[]): boolean {
+    public appendAction(k: string, ..._args: any[]): boolean
+    {
         let _local_3 = '';
+
         this._actionsSorted = false;
 
-        if (_args && (_args.length > 0)) _local_3 = _args[0];
+        if(_args && (_args.length > 0)) _local_3 = _args[0];
 
-        if ((_local_3 !== undefined) && (_local_3 !== null)) _local_3 = _local_3.toString();
+        if((_local_3 !== undefined) && (_local_3 !== null)) _local_3 = _local_3.toString();
 
-        console.log(`Appending action: ${k}, parameter: ${_local_3}`); // Debug action appending
-
-        switch (k) {
+        switch(k)
+        {
             case AvatarAction.POSTURE:
-                switch (_local_3) {
+                switch(_local_3)
+                {
                     case AvatarAction.POSTURE_LAY:
                     case AvatarAction.POSTURE_WALK:
                     case AvatarAction.POSTURE_STAND:
@@ -351,19 +430,28 @@ export class AvatarImage implements IAvatarImage {
                     case AvatarAction.SNOWWAR_DIE_BACK:
                     case AvatarAction.SNOWWAR_PICK:
                     case AvatarAction.SNOWWAR_THROW:
-                        if ((_local_3 === AvatarAction.POSTURE_LAY)) {
-                            if (this._mainDirection == 0) {
-                                this.setDirection(AvatarSetType.FULL, 4);
-                            } else {
-                                this.setDirection(AvatarSetType.FULL, 2);
+                        if((_local_3 === AvatarAction.POSTURE_LAY) || (_local_3 === AvatarAction.POSTURE_LAY) || (_local_3 === AvatarAction.POSTURE_LAY))
+                        {
+                            if(_local_3 === AvatarAction.POSTURE_LAY)
+                            {
+                                if(this._mainDirection == 0)
+                                {
+                                    this.setDirection(AvatarSetType.FULL, 4);
+                                }
+                                else
+                                {
+                                    this.setDirection(AvatarSetType.FULL, 2);
+                                }
                             }
                         }
+
                         this.addActionData(_local_3);
                         break;
                 }
                 break;
             case AvatarAction.GESTURE:
-                switch (_local_3) {
+                switch(_local_3)
+                {
                     case AvatarAction.GESTURE_AGGRAVATED:
                     case AvatarAction.GESTURE_SAD:
                     case AvatarAction.GESTURE_SMILE:
@@ -391,7 +479,7 @@ export class AvatarImage implements IAvatarImage {
             case AvatarAction.CARRY_OBJECT:
             case AvatarAction.USE_OBJECT: {
                 const _local_4 = this._structure.getActionDefinitionWithState(k);
-                if (_local_4) _local_3 = _local_4.getParameterValue(_local_3);
+                if(_local_4) _local_3 = _local_4.getParameterValue(_local_3);
                 this.addActionData(k, _local_3);
                 break;
             }
@@ -400,14 +488,17 @@ export class AvatarImage implements IAvatarImage {
         return true;
     }
 
-    protected addActionData(k: string, _arg_2: string = ''): void {
-        let _local_3: ActiveActionData;
-        if (!this._actions) this._actions = [];
+    protected addActionData(k: string, _arg_2: string=''): void
+    {
+        let _local_3:ActiveActionData;
+        if(!this._actions) this._actions = [];
 
         let _local_4 = 0;
-        while (_local_4 < this._actions.length) {
+        while(_local_4 < this._actions.length)
+        {
             _local_3 = this._actions[_local_4];
-            if (((_local_3.actionType == k) && (_local_3.actionParameter == _arg_2))) {
+            if(((_local_3.actionType == k) && (_local_3.actionParameter == _arg_2)))
+            {
                 return;
             }
             _local_4++;
@@ -415,11 +506,13 @@ export class AvatarImage implements IAvatarImage {
         this._actions.push(new ActiveActionData(k, _arg_2, this._frameCounter));
     }
 
-    public isAnimating(): boolean {
+    public isAnimating(): boolean
+    {
         return (this._isAnimating) || (this._animationFrameCount > 1);
     }
 
-    private resetActions(): boolean {
+    private resetActions(): boolean
+    {
         this._animationHasResetOnToggle = false;
         this._isAnimating = false;
         this._sprites = [];
@@ -432,139 +525,179 @@ export class AvatarImage implements IAvatarImage {
         return true;
     }
 
-    private isHeadTurnPreventedByAction(): boolean {
+    private isHeadTurnPreventedByAction(): boolean
+    {
         let _local_2: IActionDefinition;
+        let _local_3: ActiveActionData;
         let k: boolean;
-        if (this._sortedActions == null) {
+        if(this._sortedActions == null)
+        {
             return false;
         }
-        for (const _local_3 of this._sortedActions) {
+        for(const _local_3 of this._sortedActions)
+        {
             _local_2 = this._structure.getActionDefinitionWithState(_local_3.actionType);
-            if (((!(_local_2 == null)) && (_local_2.getPreventHeadTurn(_local_3.actionParameter)))) {
+            if(((!(_local_2 == null)) && (_local_2.getPreventHeadTurn(_local_3.actionParameter))))
+            {
                 k = true;
             }
         }
         return k;
     }
 
-    private sortActions(): boolean {
+    private sortActions(): boolean
+    {
         let _local_2: boolean;
         let _local_3: boolean;
-        let _local_4: ActiveActionData;
+        let _local_4:ActiveActionData;
+        let _local_5: number;
         let k: boolean;
 
         this._currentActionsString = '';
         this._sortedActions = this._structure.sortActions(this._actions);
         this._animationFrameCount = this._structure.maxFrames(this._sortedActions);
 
-        if (!this._sortedActions) {
-            this._canvasOffsets = [0, 0, 0];
+        if(!this._sortedActions)
+        {
+            this._canvasOffsets = [ 0, 0, 0 ];
 
-            if (this._lastActionsString !== '') {
+            if(this._lastActionsString !== '')
+            {
                 k = true;
+
                 this._lastActionsString = '';
             }
-        } else {
+        }
+        else
+        {
             this._canvasOffsets = this._structure.getCanvasOffsets(this._sortedActions, this._scale, this._mainDirection);
-            console.log(`Canvas offsets for sorted actions: ${this._canvasOffsets}`); // Debug offsets
 
-            for (const _local_4 of this._sortedActions) {
+            for(const _local_4 of this._sortedActions)
+            {
                 this._currentActionsString = (this._currentActionsString + (_local_4.actionType + _local_4.actionParameter));
 
-                if (_local_4.actionType === AvatarAction.EFFECT) {
+                if(_local_4.actionType === AvatarAction.EFFECT)
+                {
                     const _local_5 = parseInt(_local_4.actionParameter);
 
-                    if (this._effectIdInUse !== _local_5) _local_2 = true;
+                    if(this._effectIdInUse !== _local_5) _local_2 = true;
 
                     this._effectIdInUse = _local_5;
+
                     _local_3 = true;
                 }
             }
 
-            if (!_local_3) {
-                if (this._effectIdInUse > -1) _local_2 = true;
+            if(!_local_3)
+            {
+                if(this._effectIdInUse > -1) _local_2 = true;
+
                 this._effectIdInUse = -1;
             }
 
-            if (_local_2) this._cache.disposeInactiveActions(0);
+            if(_local_2) this._cache.disposeInactiveActions(0);
 
-            if (this._lastActionsString != this._currentActionsString) {
+            if(this._lastActionsString != this._currentActionsString)
+            {
                 k = true;
+
                 this._lastActionsString = this._currentActionsString;
             }
         }
 
         this._actionsSorted = true;
+
         return k;
     }
 
-    private setActionsToParts(): void {
-        if (!this._sortedActions) return;
+    private setActionsToParts(): void
+    {
+        if(!this._sortedActions == null) return;
 
-        this._sprites = [];
+        const _local_3 = 0;
         const _local_4: string[] = [];
 
-        for (const k of this._sortedActions) _local_4.push(k.actionType);
+        for(const k of this._sortedActions) _local_4.push(k.actionType);
 
-        for (const k of this._sortedActions) {
-            console.log(`Processing action: ${k.actionType}, parameter: ${k.actionParameter}`); // Debug action
-            if (k && k.definition && k.definition.isAnimation) {
-                const animationId = `${k.definition.state}.${k.actionParameter}`;
-                console.log(`Querying animation: ${animationId}`); // Debug animation query
-                const _local_2 = this._structure.getAnimation(animationId);
-                if (_local_2) {
-                    console.log(`Animation found, spriteData length: ${(_local_2.spriteData || []).length}`); // Debug sprite data
-                    this._sprites = this._sprites.concat(_local_2.spriteData || []);
-                    if (_local_2.hasDirectionData()) this._directionOffset = _local_2.directionData.offset;
-                    if (_local_2.hasAvatarData()) this._avatarSpriteData = _local_2.avatarData;
-                } else {
-                    console.log(`No animation for ${animationId}`);
-                }
+        for(const k of this._sortedActions)
+        {
+            if((k && k.definition) && k.definition.isAnimation)
+            {
+                const _local_2 = this._structure.getAnimation(((k.definition.state + '.') + k.actionParameter));
 
-                if (_local_2 && _local_2.hasOverriddenActions()) {
+                if(_local_2 && _local_2.hasOverriddenActions())
+                {
                     const _local_5 = _local_2.overriddenActionNames();
-                    if (_local_5) {
-                        for (const _local_6 of _local_5) {
-                            if (_local_4.indexOf(_local_6) >= 0) k.overridingAction = _local_2.overridingAction(_local_6);
+
+                    if(_local_5)
+                    {
+                        for(const _local_6 of _local_5)
+                        {
+                            if(_local_4.indexOf(_local_6) >= 0) k.overridingAction = _local_2.overridingAction(_local_6);
                         }
                     }
                 }
 
-                if (_local_2 && _local_2.resetOnToggle) {
+                if(_local_2 && _local_2.resetOnToggle)
+                {
                     this._animationHasResetOnToggle = true;
                 }
             }
+        }
 
-            if (!((!(k)) || (!(k.definition)))) {
-                if (k.definition.isAnimation && (k.actionParameter === '')) k.actionParameter = '1';
-                this.setActionToParts(k, 0);
-                if (k.definition.isAnimation) {
+        for(const k of this._sortedActions)
+        {
+            if(!((!(k)) || (!(k.definition))))
+            {
+                if(k.definition.isAnimation && (k.actionParameter === '')) k.actionParameter = '1';
+
+                this.setActionToParts(k, _local_3);
+
+                if(k.definition.isAnimation)
+                {
                     this._isAnimating = k.definition.isAnimated(k.actionParameter);
+
+                    const _local_2 = this._structure.getAnimation(((k.definition.state + '.') + k.actionParameter));
+
+                    if(_local_2)
+                    {
+                        this._sprites = this._sprites.concat(_local_2.spriteData);
+
+                        if(_local_2.hasDirectionData()) this._directionOffset = _local_2.directionData.offset;
+
+                        if(_local_2.hasAvatarData()) this._avatarSpriteData = _local_2.avatarData;
+                    }
                 }
             }
         }
     }
 
-    private setActionToParts(k: IActiveActionData, _arg_2: number): void {
-        if (((k == null) || (k.definition == null))) {
+    private setActionToParts(k: IActiveActionData, _arg_2: number): void
+    {
+        if(((k == null) || (k.definition == null)))
+        {
             return;
         }
-        if (k.definition.assetPartDefinition == '') {
+        if(k.definition.assetPartDefinition == '')
+        {
             return;
         }
-        if (k.definition.isMain) {
+        if(k.definition.isMain)
+        {
             this._mainAction = k;
             this._cache.setGeometryType(k.definition.geometryType);
         }
         this._cache.setAction(k, _arg_2);
     }
 
-    private resetBodyPartCache(k: IActiveActionData): void {
-        if (!k) return;
+    private resetBodyPartCache(k: IActiveActionData): void
+    {
+        if(!k) return;
 
-        if (k.definition.assetPartDefinition === '') return;
+        if(k.definition.assetPartDefinition === '') return;
 
-        if (k.definition.isMain) {
+        if(k.definition.isMain)
+        {
             this._mainAction = k;
             this._cache.setGeometryType(k.definition.geometryType);
         }
@@ -572,23 +705,73 @@ export class AvatarImage implements IAvatarImage {
         this._cache.resetBodyPartCache(k);
     }
 
-    public get avatarSpriteData(): IAvatarDataContainer {
+    public get avatarSpriteData(): IAvatarDataContainer
+    {
         return this._avatarSpriteData;
     }
 
-    public isPlaceholder(): boolean {
+    // private convertToGrayscale(container: Canvas, channel: string = 'CHANNELS_EQUAL'): Canvas
+    // {
+    //     let _local_3 = 0.33;
+    //     let _local_4 = 0.33;
+    //     let _local_5 = 0.33;
+    //     const _local_6 = 1;
+
+    //     switch(channel)
+    //     {
+    //         case AvatarImage.CHANNELS_UNIQUE:
+    //             _local_3 = 0.3;
+    //             _local_4 = 0.59;
+    //             _local_5 = 0.11;
+    //             break;
+    //         case AvatarImage.CHANNELS_RED:
+    //             _local_3 = 1;
+    //             _local_4 = 0;
+    //             _local_5 = 0;
+    //             break;
+    //         case AvatarImage.CHANNELS_GREEN:
+    //             _local_3 = 0;
+    //             _local_4 = 1;
+    //             _local_5 = 0;
+    //             break;
+    //         case AvatarImage.CHANNELS_BLUE:
+    //             _local_3 = 0;
+    //             _local_4 = 0;
+    //             _local_5 = 1;
+    //             break;
+    //         case AvatarImage.CHANNELS_DESATURATED:
+    //             _local_3 = 0.3086;
+    //             _local_4 = 0.6094;
+    //             _local_5 = 0.082;
+    //             break;
+    //     }
+
+    //     const colorFilter = new ColorMatrixFilter();
+
+    //     colorFilter.matrix = [_local_3, _local_4, _local_5, 0, 0, _local_3, _local_4, _local_5, 0, 0, _local_3, _local_4, _local_5, 0, 0, 0, 0, 0, 1, 0];
+
+    //     container.filters = [ colorFilter ];
+
+    //     return container;
+    // }
+
+    public isPlaceholder(): boolean
+    {
         return false;
     }
 
-    public forceActionUpdate(): void {
+    public forceActionUpdate(): void
+    {
         this._lastActionsString = '';
     }
 
-    public get animationHasResetOnToggle(): boolean {
+    public get animationHasResetOnToggle(): boolean
+    {
         return this._animationHasResetOnToggle;
     }
 
-    public get mainAction(): IActiveActionData {
+    public get mainAction(): IActiveActionData
+    {
         return this._mainAction;
     }
 }

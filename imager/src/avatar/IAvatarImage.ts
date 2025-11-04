@@ -30,5 +30,4 @@ export interface IAvatarImage
     resetAnimationFrameCounter(): void;
     mainAction: IActiveActionData;
     getTotalFrameCount(): number;
-	getBodyParts(setType: string, geometryType: string, direction: number): string[];
 }

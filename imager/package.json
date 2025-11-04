@@ -10,7 +10,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "gifencoder": "^2.0.1",
-    "node-fetch": "3.3.2",
+    "node-fetch": "3",
     "pako": "^2.1.0"
   },
   "devDependencies": {
@@ -18,7 +18,7 @@
     "@types/cli-color": "^2.0.6",
     "@types/express": "^5.0.0",
     "@types/gifencoder": "^2.0.3",
-    "@types/node": "^24.0.4",
+    "@types/node": "^22.10.2",
     "@types/pako": "^2.0.3",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
@@ -40,8 +40,5 @@
   "bugs": {
     "url": "https://git.krews.org/nitro/nitro-imager/issues"
   },
-  "homepage": "https://git.krews.org/nitro/nitro-imager",
-  "resolutions": {
-    "gifencoder/canvas": "^3.0.0"
-  }
+  "homepage": "https://git.krews.org/nitro/nitro-imager"
 }
