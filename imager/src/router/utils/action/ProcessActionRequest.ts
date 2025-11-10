@@ -9,12 +9,39 @@ export const ProcessActionRequest = (query: RequestQuery, avatar: IAvatarImage) 
 {
     const actions = (GetActionRequest(query)?.split(',') || []);
 
-    for(const action of actions)
+    for (const action of actions)
     {
-        if(ProcessPostureAction(action, avatar)) continue;
+        if (ProcessPostureAction(action, avatar)) continue;
+        if (ProcessExpressionAction(action, avatar)) continue;
+        if (ProcessCarryAction(action, avatar)) continue;
 
-        if(ProcessExpressionAction(action, avatar)) continue;
+        switch (action.toLowerCase())
+        {
+            case 'wav':
+            case 'wave':
+                avatar.appendAction('wave');
+                break;
 
-        if(ProcessCarryAction(action, avatar)) continue;
+            case 'wlk':
+            case 'walk':
+                avatar.appendAction('walk');
+                break;
+
+            case 'sit':
+                avatar.appendAction('sit');
+                break;
+
+            case 'lay':
+            case 'laydown':
+                avatar.appendAction('lay');
+                break;
+
+            case 'dance':
+                avatar.appendAction('dance');
+                break;
+
+            default:
+                break;
+        }
     }
 };
