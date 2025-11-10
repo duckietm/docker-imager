@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libgif-dev \
     build-essential \
     g++ \
+    ffmpeg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
