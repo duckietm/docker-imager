@@ -25,16 +25,34 @@ Example:
 
 ```yml
 services:
-  nodejs:
-    container_name: imager
+  node:
     build:
-      context: ./
-      target: imager
+      context: .
+      dockerfile: Dockerfile
+    container_name: habbo_imager
+    working_dir: /src
+    ports:
+      - "3031:3031"
+    stdin_open: true
+    tty: true
+    networks:
+      frontend:
+        ipv4_address: 172.38.0.2
+    environment:
+      - YARN_CACHE_FOLDER=/src/app/.yarn-cache
     volumes:
       - ./imager:/src
-      - /var/www:/var/www # Path to your data
-    command: sh -c "yarn install && yarn build && node ./dist/index.js" 
-    tty: true
+      - /var/www:/var/www
+    command: sh -c "yarn install && yarn build && yarn start"
+    restart: always
+
+networks:
+  frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.38.0.0/24
+          gateway: 172.38.0.1
 ```
 
 Now you can run : docker-compose up -d 
