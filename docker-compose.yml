@@ -6,7 +6,7 @@ services:
     container_name: habbo_imager
     working_dir: /src
     ports:
-      - "3030:3030"
+      - "3031:3031"
     stdin_open: true
     tty: true
     networks:
@@ -17,7 +17,7 @@ services:
     volumes:
       - ./imager:/src
       - /var/www:/var/www
-    command: sh -c "yarn install && yarn start"
+    command: sh -c "yarn install && yarn build && yarn start"
     restart: always
 
 networks:
@@ -27,4 +27,3 @@ networks:
       config:
         - subnet: 172.38.0.0/24
           gateway: 172.38.0.1
-
